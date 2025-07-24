@@ -39,7 +39,7 @@ namespace PlatformService.Controllers
             return Ok(_mapper.Map<PlatformReadDto>(platform));
         }
 
-        [HttpPost]
+        [HttpPost(Name = "CreatePlatform")]
         public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto platformCreateDto)
         {
             Console.WriteLine("--> Creating a new Platform in PlatformService");
