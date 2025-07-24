@@ -1,0 +1,70 @@
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using PlatformService.Data;
+using PlatformService.Dtos;
+using PlatformService.Models;
+
+namespace PlatformService.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PlatformsController : ControllerBase
+    {
+        private readonly IPlatformRepo _repository;
+        private readonly IMapper _mapper;
+
+        public PlatformsController(IPlatformRepo repository, IMapper mapper)
+        {
+            _repository = repository;
+            _mapper = mapper;
+        }
+
+        [HttpGet(Name = "GetPlatforms")]
+        public ActionResult<IEnumerable<PlatformReadDto>> GetPlatforms()
+        {
+            Console.WriteLine("--> Getting Platforms from PlatformService");
+            var platforms = _repository.GetAllPlatforms();
+            return Ok(_mapper.Map<IEnumerable<PlatformReadDto>>(platforms));
+        }
+
+        [HttpGet("{id}", Name = "GetPlatformById")]
+        public ActionResult<PlatformReadDto> GetPlatformById(int id)
+        {
+            Console.WriteLine($"--> Getting Platform with ID: {id} from PlatformService");
+            var platform = _repository.GetPlatformById(id);
+            if (platform == null)
+            {
+                return NotFound();
+            }
+            return Ok(_mapper.Map<PlatformReadDto>(platform));
+        }
+
+        [HttpPost]
+        public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto platformCreateDto)
+        {
+            Console.WriteLine("--> Creating a new Platform in PlatformService");
+            var platformModel = _mapper.Map<PlatformCreateDto, Platform>(platformCreateDto);
+            if (platformModel == null)
+            {
+                return BadRequest("Invalid platform data.");
+            }
+
+            try
+            {
+                _repository.CreatePlatform(platformModel);
+                _repository.SaveChanges();
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"--> Error creating platform: {ex.Message}");
+                return StatusCode(500, "Internal server error while creating platform.");
+            }
+            var platformReadDto = _mapper.Map<PlatformReadDto>(platformModel);
+
+            return CreatedAtRoute(
+                nameof(GetPlatformById),
+                new { Id = platformReadDto.Id },
+                platformReadDto
+            );
+        }
+    }
+}
