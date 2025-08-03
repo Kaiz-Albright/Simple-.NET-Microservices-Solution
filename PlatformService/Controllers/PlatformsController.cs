@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlatformService.Data;
 using PlatformService.Dtos;
 using PlatformService.Models;
+using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Controllers
 {
@@ -12,11 +13,16 @@ namespace PlatformService.Controllers
     {
         private readonly IPlatformRepo _repository;
         private readonly IMapper _mapper;
+        private readonly ICommandDataClient _commandDataClient;
 
-        public PlatformsController(IPlatformRepo repository, IMapper mapper)
+        public PlatformsController(
+            IPlatformRepo repository,
+            IMapper mapper,
+            ICommandDataClient commandDataClient)
         {
             _repository = repository;
             _mapper = mapper;
+            _commandDataClient = commandDataClient;
         }
 
         [HttpGet(Name = "GetPlatforms")]
@@ -40,7 +46,7 @@ namespace PlatformService.Controllers
         }
 
         [HttpPost(Name = "CreatePlatform")]
-        public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto platformCreateDto)
+        public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto platformCreateDto)
         {
             Console.WriteLine("--> Creating a new Platform in PlatformService");
             var platformModel = _mapper.Map<PlatformCreateDto, Platform>(platformCreateDto);
@@ -59,6 +65,17 @@ namespace PlatformService.Controllers
                 return StatusCode(500, "Internal server error while creating platform.");
             }
             var platformReadDto = _mapper.Map<PlatformReadDto>(platformModel);
+
+
+            // Send the created platform to the Command Service
+            try
+            {                 
+                await _commandDataClient.SendPlatformToCommand(platformReadDto);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"--> Error sending platform to Command Service: {ex.Message}");
+            }
 
             return CreatedAtRoute(
                 nameof(GetPlatformById),
