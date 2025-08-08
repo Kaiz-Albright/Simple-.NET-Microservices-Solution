@@ -16,7 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace PlatformService
+namespace CommandsService
 {
     public class Startup
     {
