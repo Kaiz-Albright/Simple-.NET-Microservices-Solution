@@ -54,3 +54,29 @@ curl -X POST http://localhost:5066/api/c/platforms
 
 Alternatively, use the `.http` files in each project if your editor supports them.
 
+## Visual test execution and reports
+
+You can generate a visual HTML test report and a clickable coverage report.
+
+One-time setup (per machine):
+
+```powershell
+# from repo root
+pwsh scripts/Test-Visual.ps1 -NoOpen
+```
+
+That will ensure required local tools are installed.
+
+Regular usage:
+
+```powershell
+# from repo root
+pwsh scripts/Test-Visual.ps1
+```
+
+This will:
+- run `dotnet test` with TRX output and Cobertura coverage
+- generate TestResults/index.html (test summary) if the TRX→HTML tool is available
+- generate CoverageReport/index.html (coverage by file/line)
+- open available reports in your browser (omit `-NoOpen` to skip opening)
+
