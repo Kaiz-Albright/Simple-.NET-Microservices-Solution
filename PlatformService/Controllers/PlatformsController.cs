@@ -1,87 +1,53 @@
-﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using PlatformService.Data;
 using PlatformService.Dtos;
-using PlatformService.Models;
-using PlatformService.SyncDataServices.Http;
+using PlatformService.Services;
 
-namespace PlatformService.Controllers
+namespace PlatformService.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class PlatformsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PlatformsController : ControllerBase
+    private readonly IPlatformService _platformService;
+
+    public PlatformsController(IPlatformService platformService)
     {
-        private readonly IPlatformRepo _repository;
-        private readonly IMapper _mapper;
-        private readonly ICommandDataClient _commandDataClient;
+        _platformService = platformService;
+    }
 
-        public PlatformsController(
-            IPlatformRepo repository,
-            IMapper mapper,
-            ICommandDataClient commandDataClient)
+    [HttpGet(Name = "GetPlatforms")]
+    public ActionResult<IEnumerable<PlatformReadDto>> GetPlatforms()
+    {
+        Console.WriteLine("--> Getting Platforms from PlatformService");
+        var platforms = _platformService.GetAllPlatforms();
+        return Ok(platforms);
+    }
+
+    [HttpGet("{id}", Name = "GetPlatformById")]
+    public ActionResult<PlatformReadDto> GetPlatformById(int id)
+    {
+        Console.WriteLine($"--> Getting Platform with ID: {id} from PlatformService");
+        var platform = _platformService.GetPlatformById(id);
+        if (platform == null)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _commandDataClient = commandDataClient;
+            return NotFound();
         }
+        return Ok(platform);
+    }
 
-        [HttpGet(Name = "GetPlatforms")]
-        public ActionResult<IEnumerable<PlatformReadDto>> GetPlatforms()
+    [HttpPost(Name = "CreatePlatform")]
+    public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto platformCreateDto)
+    {
+        Console.WriteLine("--> Creating a new Platform in PlatformService");
+        var platformReadDto = await _platformService.CreatePlatformAsync(platformCreateDto);
+        if (platformReadDto == null)
         {
-            Console.WriteLine("--> Getting Platforms from PlatformService");
-            var platforms = _repository.GetAllPlatforms();
-            return Ok(_mapper.Map<IEnumerable<PlatformReadDto>>(platforms));
+            return BadRequest("Invalid platform data.");
         }
-
-        [HttpGet("{id}", Name = "GetPlatformById")]
-        public ActionResult<PlatformReadDto> GetPlatformById(int id)
-        {
-            Console.WriteLine($"--> Getting Platform with ID: {id} from PlatformService");
-            var platform = _repository.GetPlatformById(id);
-            if (platform == null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<PlatformReadDto>(platform));
-        }
-
-        [HttpPost(Name = "CreatePlatform")]
-        public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto platformCreateDto)
-        {
-            Console.WriteLine("--> Creating a new Platform in PlatformService");
-            var platformModel = _mapper.Map<PlatformCreateDto, Platform>(platformCreateDto);
-            if (platformModel == null)
-            {
-                return BadRequest("Invalid platform data.");
-            }
-
-            try
-            {
-                _repository.CreatePlatform(platformModel);
-                _repository.SaveChanges();
-            } catch (Exception ex)
-            {
-                Console.WriteLine($"--> Error creating platform: {ex.Message}");
-                return StatusCode(500, "Internal server error while creating platform.");
-            }
-            var platformReadDto = _mapper.Map<PlatformReadDto>(platformModel);
-
-
-            // Send the created platform to the Command Service
-            try
-            {                 
-                await _commandDataClient.SendPlatformToCommand(platformReadDto);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"--> Error sending platform to Command Service: {ex.Message}");
-            }
-
-            return CreatedAtRoute(
-                nameof(GetPlatformById),
-                new { Id = platformReadDto.Id },
-                platformReadDto
-            );
-        }
+        return CreatedAtRoute(
+            nameof(GetPlatformById),
+            new { Id = platformReadDto.Id },
+            platformReadDto
+        );
     }
 }

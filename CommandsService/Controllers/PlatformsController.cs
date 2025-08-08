@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using CommandsService.Services;
 
-namespace CommandsService.Controllers
+namespace CommandsService.Controllers;
+
+[Route("api/c/[controller]")]
+[ApiController]
+public class PlatformsController : ControllerBase
 {
-    [Route("api/c/[controller]")]
-    [ApiController]
-    public class PlatformsController : ControllerBase
+    private readonly ICommandService _commandService;
+
+    public PlatformsController(ICommandService commandService)
     {
-        public PlatformsController()
-        {
+        _commandService = commandService;
+    }
 
-        }
-
-        [HttpPost(Name = "TestInboundConnection")]
-        public ActionResult TestInboundConnection()
-        {
-            Console.WriteLine("--> Inbound POST # Command Service");
-            return Ok("Inbound test from Commands Service");
-        }
-
+    [HttpPost(Name = "TestInboundConnection")]
+    public ActionResult TestInboundConnection()
+    {
+        var response = _commandService.TestInboundConnection();
+        return Ok(response);
     }
 }
