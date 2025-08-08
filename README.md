@@ -56,13 +56,13 @@ Alternatively, use the `.http` files in each project if your editor supports the
 
 ## Visual test execution and reports
 
-You can generate a visual HTML test report and a clickable coverage report.
+you can generate a visual HTML test report and a clickable coverage report.
 
 One-time setup (per machine):
 
 ```powershell
-# from repo root
-pwsh scripts/Test-Visual.ps1 -NoOpen
+# from repo root (Windows PowerShell)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\Test-Visual.ps1 -NoOpen
 ```
 
 That will ensure required local tools are installed.
@@ -70,13 +70,28 @@ That will ensure required local tools are installed.
 Regular usage:
 
 ```powershell
-# from repo root
-pwsh scripts/Test-Visual.ps1
+# from repo root (opens reports when done)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\Test-Visual.ps1
 ```
 
 This will:
 - run `dotnet test` with TRX output and Cobertura coverage
-- generate TestResults/index.html (test summary) if the TRX→HTML tool is available
+- generate TestResults/index.html (test summary). If an external TRX→HTML tool is unavailable, a built‑in fallback renderer is used
 - generate CoverageReport/index.html (coverage by file/line)
 - open available reports in your browser (omit `-NoOpen` to skip opening)
+
+What’s included in the HTML test report:
+- Filter by text (test name/details) and by outcome (All/Passed/Failed/Skipped)
+- Sort by Test, Outcome, or Duration via clickable headers
+- Live visible row count
+
+Ignored artifacts in git:
+- TestResults/, CoverageReport/, and *.trx files are ignored by .gitignore to keep the repo clean
+
+Troubleshooting:
+- If reports do not open automatically, open them manually:
+  - Test report: TestResults/index.html
+  - Coverage: CoverageReport/index.html
+- If you use PowerShell 7 (pwsh), you can run: `pwsh scripts/Test-Visual.ps1`
+- If ReportGenerator isn’t available, coverage HTML will be skipped; re-run after `dotnet tool install dotnet-reportgenerator-globaltool`
 
