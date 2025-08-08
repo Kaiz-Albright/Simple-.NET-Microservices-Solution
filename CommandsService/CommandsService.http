@@ -1,6 +1,7 @@
 @CommandsService_HostAddress = http://localhost:5066
 
-GET {{CommandsService_HostAddress}}/weatherforecast/
+### Test inbound connection
+POST {{CommandsService_HostAddress}}/api/c/platforms
 Accept: application/json
 
 ###
