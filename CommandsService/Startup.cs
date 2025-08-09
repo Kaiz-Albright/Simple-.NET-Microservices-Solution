@@ -32,11 +32,11 @@ namespace CommandsService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            /*
+            
             Console.WriteLine("--> Using InMem Db");
             services.AddDbContext<Data.AppDbContext>(options =>
                 options.UseInMemoryDatabase("InMem"));
-            */
+            
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddScoped<ICommandService, CommandService>();
