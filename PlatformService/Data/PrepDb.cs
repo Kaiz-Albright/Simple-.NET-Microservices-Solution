@@ -32,9 +32,9 @@ namespace PlatformService.Data
             {
                 Console.WriteLine("--> Seeding data...");
                 context.Platforms.AddRange(
-                    new Platform { Id = 1, Name = "Dotnet", Publisher = "Microsoft", Cost = "Free" },
-                    new Platform { Id = 2, Name = "SQL Server Express", Publisher = "Microsoft", Cost = "Free" },
-                    new Platform { Id = 3, Name = "Kubernetes", Publisher = "Cloud Native Computing Foundation", Cost = "Free" }
+                    new Platform { Name = "Dotnet", Publisher = "Microsoft", Cost = "Free" },
+                    new Platform { Name = "SQL Server Express", Publisher = "Microsoft", Cost = "Free" },
+                    new Platform { Name = "Kubernetes", Publisher = "Cloud Native Computing Foundation", Cost = "Free" }
                 );
                 context.SaveChanges();
             }

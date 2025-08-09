@@ -1,6 +1,6 @@
 ﻿using PlatformService.Models;
 
-namespace PlatformService.Data
+namespace PlatformService.Data.Repos
 {
     public class PlatformRepo : IPlatformRepo
     {
@@ -33,7 +33,7 @@ namespace PlatformService.Data
 
         public bool SaveChanges()
         {
-            return (_context.SaveChanges() >= 0);
+            return _context.SaveChanges() >= 0;
         }
     }
 }

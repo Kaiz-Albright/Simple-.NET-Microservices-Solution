@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using PlatformService.Data;
+using PlatformService.Data.Repos;
 using PlatformService.Services;
 using PlatformService.SyncDataServices.Http;
 
@@ -33,11 +34,11 @@ namespace PlatformService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            if (false)
+            if (_env.IsProduction())
             {
                 Console.WriteLine("--> Using SQL Server Db");
                 services.AddDbContext<Data.AppDbContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("PlatformsConn")));
+                    options.UseSqlServer(Configuration.GetConnectionString("PlatformsConnection")));
             }
             else
             {
@@ -46,7 +47,7 @@ namespace PlatformService
                     options.UseInMemoryDatabase("InMem"));
             }
             
-            services.AddScoped<Data.IPlatformRepo, Data.PlatformRepo>();
+            services.AddScoped<IPlatformRepo, PlatformRepo>();
             services.AddScoped<IPlatformService, Services.PlatformService>();
             services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
             services.AddControllers();

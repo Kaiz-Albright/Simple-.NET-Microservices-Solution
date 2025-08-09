@@ -1,5 +1,5 @@
 using AutoMapper;
-using PlatformService.Data;
+using PlatformService.Data.Repos;
 using PlatformService.Dtos;
 using PlatformService.Models;
 using PlatformService.SyncDataServices.Http;
