@@ -1,4 +1,5 @@
-﻿using PlatformService.Models;
+﻿using PlatformService.Data.Repos.Interfaces;
+using PlatformService.Models;
 
 namespace PlatformService.Data.Repos
 {

@@ -16,7 +16,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using PlatformService.Data;
 using PlatformService.Data.Repos;
-using PlatformService.Services;
+using PlatformService.Data.Repos.Interfaces;
+using PlatformService.Services.Interfaces;
 using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService

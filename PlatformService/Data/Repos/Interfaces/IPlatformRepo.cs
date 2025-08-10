@@ -1,6 +1,6 @@
 ﻿using PlatformService.Models;
 
-namespace PlatformService.Data.Repos
+namespace PlatformService.Data.Repos.Interfaces
 {
     public interface IPlatformRepo
     {

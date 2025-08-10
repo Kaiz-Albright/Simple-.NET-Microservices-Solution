@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PlatformService.Dtos;
-using PlatformService.Services;
+using PlatformService.Services.Interfaces;
 
 namespace PlatformService.Controllers;
 

@@ -1,7 +1,8 @@
 using AutoMapper;
-using PlatformService.Data.Repos;
+using PlatformService.Data.Repos.Interfaces;
 using PlatformService.Dtos;
 using PlatformService.Models;
+using PlatformService.Services.Interfaces;
 using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Services;

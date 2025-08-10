@@ -1,5 +1,6 @@
 using AutoMapper;
 using CommandsService.Data.Repos.Interfaces;
+using CommandsService.Dtos.Command;
 using CommandsService.Dtos.Platform;
 using CommandsService.Services.Interfaces;
 
@@ -14,6 +15,13 @@ public class CommandService : ICommandService
     {
         _repository = repository;
         _mapper = mapper;
+    }
+
+    public IEnumerable<CommandReadDto> GetCommandsForPlatform(int platformId)
+    {
+        Console.WriteLine($"--> Getting commands for platform with ID {platformId}");
+        var commands = _repository.GetCommandsForPlatform(platformId);
+        return _mapper.Map<IEnumerable<CommandReadDto>>(commands);
     }
 
     public string TestInboundConnection()

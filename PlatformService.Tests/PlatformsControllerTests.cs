@@ -2,7 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PlatformService.Controllers;
-using PlatformService.Data.Repos;
+using PlatformService.Data.Repos.Interfaces;
 using PlatformService.Dtos;
 using PlatformService.Models;
 using PlatformService.Profiles;
