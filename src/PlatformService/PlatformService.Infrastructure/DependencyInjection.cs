@@ -18,10 +18,12 @@ public static class DependencyInjection
         {
             if (env.IsDevelopment())
             {
+                Console.WriteLine("--> Using InMemory Database");
                 options.UseInMemoryDatabase("PlatformServiceDb");
             }
             else
             {
+                Console.WriteLine("--> Using SQL Server Database");
                 options.UseSqlServer(config.GetConnectionString("PlatformService"));
             }
         });

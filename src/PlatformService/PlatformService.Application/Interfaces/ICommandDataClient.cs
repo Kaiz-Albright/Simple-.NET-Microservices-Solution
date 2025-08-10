@@ -1,4 +1,4 @@
-using PlatformService.Contracts;
+using PlatformService.Contracts.Dtos;
 
 namespace PlatformService.Application.Interfaces;
 

@@ -1,7 +1,7 @@
 using AutoMapper;
 using PlatformService.Application.Interfaces;
 using PlatformService.Application.Repositories;
-using PlatformService.Contracts;
+using PlatformService.Contracts.Dtos;
 using PlatformService.Domain.Entities;
 
 namespace PlatformService.Application.Services;

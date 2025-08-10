@@ -1,5 +1,5 @@
 using AutoMapper;
-using PlatformService.Contracts;
+using PlatformService.Contracts.Dtos;
 using PlatformService.Domain.Entities;
 
 namespace PlatformService.Application.Mappings;
