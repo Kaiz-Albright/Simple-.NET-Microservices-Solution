@@ -1,5 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
+using CommandsService.Dtos.Platform;
 using CommandsService.Services;
+using CommandsService.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CommandsService.Controllers;
 
@@ -7,17 +9,25 @@ namespace CommandsService.Controllers;
 [ApiController]
 public class PlatformsController : ControllerBase
 {
-    private readonly ICommandService _commandService;
+    private readonly IPlatformService _platformService;
 
-    public PlatformsController(ICommandService commandService)
+    public PlatformsController(IPlatformService platformService)
     {
-        _commandService = commandService;
+        _platformService = platformService;
     }
 
-    [HttpPost(Name = "TestInboundConnection")]
-    public ActionResult TestInboundConnection()
+    [HttpGet(Name = "GetPlatforms")]
+    public ActionResult<IEnumerable<PlatformReadDto>> GetAllPlatforms()
     {
-        var response = _commandService.TestInboundConnection();
-        return Ok(response);
+        try
+        {
+            var platforms = _platformService.GetAllPlatforms();
+            return Ok(platforms);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> Error in {nameof(GetAllPlatforms)}: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
     }
 }

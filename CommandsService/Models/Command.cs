@@ -9,15 +9,15 @@ namespace CommandsService.Models
         public int Id { get; set; }
 
         [Required]
-        public string HowTo { get; set; }
+        public string HowTo { get; set; } = string.Empty;
 
         [Required]
-        public string CommandLine { get; set; }
+        public string CommandLine { get; set; } = string.Empty;
 
         [Required]
         public int PlatformId { get; set; }
 
-        public Platform Platform { get; set; }
+        public Platform Platform { get; set; } = null!;
 
         public Command(Platform platform, string howTo, string commandLine)
         {
@@ -25,6 +25,11 @@ namespace CommandsService.Models
             PlatformId = platform.Id;
             HowTo = howTo;
             CommandLine = commandLine;
+        }
+
+        public Command()
+        {
+
         }
     }
 }

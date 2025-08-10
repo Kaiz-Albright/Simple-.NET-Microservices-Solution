@@ -16,6 +16,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using CommandsService.Services;
+using CommandsService.Data.Repos.Interfaces;
+using CommandsService.Services.Interfaces;
 
 namespace CommandsService
 {
@@ -33,13 +35,15 @@ namespace CommandsService
         public void ConfigureServices(IServiceCollection services)
         {
             
-            Console.WriteLine("--> Using InMem Db");
             services.AddDbContext<Data.AppDbContext>(options =>
                 options.UseInMemoryDatabase("InMem"));
             
+            services.AddScoped<ICommandRepo, Data.Repos.CommandRepo>();
+            services.AddScoped<IPlatformRepo, Data.Repos.PlatformRepo>();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            services.AddScoped<ICommandService, CommandService>();
+            services.AddTransient<ICommandService, CommandService>();
+            services.AddTransient<IPlatformService, PlatformService>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CommandsService", Version = "v1" });

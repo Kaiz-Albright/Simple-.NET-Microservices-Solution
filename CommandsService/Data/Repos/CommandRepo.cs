@@ -1,4 +1,5 @@
-﻿using CommandsService.Models;
+﻿using CommandsService.Data.Repos.Interfaces;
+using CommandsService.Models;
 
 namespace CommandsService.Data.Repos
 {
@@ -17,23 +18,9 @@ namespace CommandsService.Data.Repos
             { 
                 throw new ArgumentNullException(nameof(command), "Command cannot be null.");
             }
-        }
 
-        public void CreatePlatform(Platform platform)
-        {
-            if (platform == null) 
-            { 
-                throw new ArgumentNullException(nameof(platform), "Platform cannot be null.");
-            }
-
-            _context.Platforms.Add(platform);
-        }
-
-        public IEnumerable<Platform> GetAllPlatforms()
-        {
-            return _context.Platforms
-                .OrderBy(p => p.Id)
-                .ToList();
+            command.PlatformId = platformId;
+            _context.Commands.Add(command);
         }
 
         public Command? GetCommand(int platformId, int commandId)
@@ -49,11 +36,6 @@ namespace CommandsService.Data.Repos
                 .Where(c => c.PlatformId == platformId)
                 .OrderBy(c => c.Id)
                 .ToList();
-        }
-
-        public bool PlatformExists(int platformId)
-        {
-            return _context.Platforms.Any(p => p.Id == platformId);
         }
 
         public bool SaveChanges()

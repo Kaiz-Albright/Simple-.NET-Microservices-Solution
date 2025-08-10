@@ -1,4 +1,4 @@
-namespace CommandsService.Services;
+namespace CommandsService.Services.Interfaces;
 
 public interface ICommandService
 {
