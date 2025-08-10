@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PlatformService\PlatformService.csproj" />
+    <ProjectReference Include="..\..\PlatformService\PlatformService.csproj" />
   </ItemGroup>
 
 </Project>

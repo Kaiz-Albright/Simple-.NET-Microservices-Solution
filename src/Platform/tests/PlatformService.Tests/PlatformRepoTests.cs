@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
+using PlatformService.Data.Repos;
 using PlatformService.Models;
 using System.Linq;
 using Xunit;
