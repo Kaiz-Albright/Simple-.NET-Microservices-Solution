@@ -10,7 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlatformService.Application\PlatformService.Application.csproj" />
-    <ProjectReference Include="..\PlatformService.Contracts\PlatformService.Contracts.csproj" />
     <ProjectReference Include="..\PlatformService.Infrastructure\PlatformService.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

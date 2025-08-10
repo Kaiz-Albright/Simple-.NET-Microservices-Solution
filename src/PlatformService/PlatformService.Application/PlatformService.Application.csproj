@@ -9,6 +9,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlatformService.Domain\PlatformService.Domain.csproj" />
-    <ProjectReference Include="..\PlatformService.Contracts\PlatformService.Contracts.csproj" />
   </ItemGroup>
 </Project>

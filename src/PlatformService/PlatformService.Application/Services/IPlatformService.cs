@@ -1,4 +1,4 @@
-using PlatformService.Contracts.Dtos;
+using PlatformService.Application.Dtos;
 
 namespace PlatformService.Application.Services;
 

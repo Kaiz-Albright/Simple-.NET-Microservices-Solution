@@ -5,8 +5,8 @@ using Microsoft.Extensions.Hosting;
 using PlatformService.Infrastructure.Data;
 using PlatformService.Infrastructure.Repositories;
 using PlatformService.Application.Repositories;
-using PlatformService.Application.Interfaces;
 using PlatformService.Infrastructure.SyncDataServices.Http;
+using PlatformService.Infrastructure.Interfaces;
 
 namespace PlatformService.Infrastructure;
 
