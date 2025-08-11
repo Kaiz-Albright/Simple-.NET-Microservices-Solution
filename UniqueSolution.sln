@@ -43,6 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8S", "K8S", "{7F448905-374
 		deploy\K8S\mssql-plat-depl.yaml = deploy\K8S\mssql-plat-depl.yaml
 		deploy\K8S\platforms-depl.yaml = deploy\K8S\platforms-depl.yaml
 		deploy\K8S\platforms-np-srv.yaml = deploy\K8S\platforms-np-srv.yaml
+		deploy\K8S\rabbitmq-depl.yaml = deploy\K8S\rabbitmq-depl.yaml
 		deploy\K8S\README.md = deploy\K8S\README.md
 	EndProjectSection
 EndProject
