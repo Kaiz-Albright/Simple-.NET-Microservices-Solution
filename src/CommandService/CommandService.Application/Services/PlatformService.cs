@@ -21,4 +21,10 @@ public class PlatformService : IPlatformService
         var platforms = _repository.GetAllPlatforms();
         return _mapper.Map<IEnumerable<PlatformReadDto>>(platforms);
     }
+
+    public bool PlatformExists(int platformId)
+    {
+        Console.WriteLine($"--> Checking if platform with ID {platformId} exists");
+        return _repository.PlatformExists(platformId);
+    }
 }

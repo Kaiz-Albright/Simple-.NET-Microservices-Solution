@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PlatformService.Application.Dtos;
 using PlatformService.Application.Services;
+using System;
+using System.ComponentModel.Design;
 
 namespace PlatformService.Api.Controllers;
 
@@ -30,7 +32,7 @@ public class PlatformsController : ControllerBase
         var platform = _platformService.GetPlatformById(id);
         if (platform == null)
         {
-            return NotFound();
+            return NotFound($"No platform found with ID {id}.");
         }
         return Ok(platform);
     }

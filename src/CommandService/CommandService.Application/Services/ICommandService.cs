@@ -7,4 +7,5 @@ public interface ICommandService
     string TestInboundConnection();
 
     IEnumerable<CommandReadDto> GetCommandsForPlatform(int platformId);
+    IEnumerable<CommandReadDto> GetCommandForPlatform(int platformId, int commandId);
 }
