@@ -31,6 +31,21 @@ public class CommandService : ICommandService
         return _mapper.Map<IEnumerable<CommandReadDto>>(command);
     }
 
+    public CommandReadDto CreateCommand(int platformId, CommandCreateDto commandCreateDto)
+    {
+        Console.WriteLine($"--> Creating command for platform with ID {platformId}");
+        if (commandCreateDto == null)
+        {
+            throw new ArgumentNullException(nameof(commandCreateDto), "Command cannot be null.");
+        }
+
+        var command = _mapper.Map<Domain.Entities.Command>(commandCreateDto);
+        _repository.CreateCommand(platformId, command);
+        _repository.SaveChanges();
+
+        return _mapper.Map<CommandReadDto>(command);
+    }
+
     public string TestInboundConnection()
     {
         Console.WriteLine("--> Inbound POST # Command Service");

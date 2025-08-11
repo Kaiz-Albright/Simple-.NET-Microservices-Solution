@@ -23,6 +23,10 @@ public class CommandsController : ControllerBase
         try
         {
             Console.WriteLine($"--> Getting commands for platform with ID {platformId}");
+            if (platformId <= 0)
+            {
+                return BadRequest("Platform ID must be greater than zero.");
+            }
             if (!_platformService.PlatformExists(platformId))
             {
                 return NotFound($"Platform with ID {platformId} does not exist.");
@@ -48,11 +52,16 @@ public class CommandsController : ControllerBase
         try
         {
             Console.WriteLine($"--> Getting command with ID {commandId} for platform with ID {platformId}");
-            if(!_platformService.PlatformExists(platformId))
+            if (platformId <= 0 || commandId <= 0)
+            {
+                return BadRequest("Platform ID / Command ID must be greater than zero.");
+            }
+
+            if (!_platformService.PlatformExists(platformId))
             {
                 return NotFound($"Platform with ID {platformId} does not exist.");
             }
-
+            
             var command = _commandService.GetCommandForPlatform(platformId, commandId);
             if (command == null || !command.Any())
             {
@@ -67,10 +76,44 @@ public class CommandsController : ControllerBase
         }
     }
 
+    [HttpPost(Name = "CreateCommandForPlatform")]
+    public ActionResult<CommandReadDto> CreateCommandForPlatform(int platformId, CommandCreateDto commandCreateDto)
+    {
+        try
+        {
+            Console.WriteLine($"--> Creating command for platform with ID {platformId}");
+            if (platformId <= 0)
+            {
+                return BadRequest("Platform ID must be greater than zero.");
+            }
+            if (!_platformService.PlatformExists(platformId))
+            {
+                return NotFound($"Platform with ID {platformId} does not exist.");
+            }
+            if (commandCreateDto == null)
+            {
+                return BadRequest("Command data cannot be null.");
+            }
+            var commandReadDto = _commandService.CreateCommand(platformId, commandCreateDto);
+            return CreatedAtRoute(
+                nameof(GetCommandForPlatform),
+                new { platformId = platformId, commandId = commandReadDto.Id },
+                commandReadDto
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> Error in {nameof(CreateCommandForPlatform)}: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /*
     [HttpPost(Name = "TestInboundConnection")]
     public ActionResult TestInboundConnection()
     {
         var response = _commandService.TestInboundConnection();
         return Ok(response);
     }
+    */
 }
