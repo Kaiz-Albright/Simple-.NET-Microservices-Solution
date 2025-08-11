@@ -366,3 +366,10 @@ FodyWeavers.xsd
 /TestResults/
 /CoverageReport/
 *.trx
+
+# Ignore testing artifacts in testing/ directory
+testing/TestResults/
+testing/CoverageReport/
+# Also ignore them in any submodule testing folder
+**/testing/TestResults/
+**/testing/CoverageReport/
