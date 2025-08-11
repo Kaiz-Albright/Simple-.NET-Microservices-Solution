@@ -1,25 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using PlatformService.Application.Contracts.Repos;
-using PlatformService.Application.Services;
+﻿using Microsoft.OpenApi.Models;
 using PlatformService.Infrastructure.Data;
-using PlatformService.Infrastructure.Repositories;
-using PlatformService.Infrastructure.SyncDataServices.Http;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using PlatformService.Application;
 using PlatformService.Infrastructure;
 

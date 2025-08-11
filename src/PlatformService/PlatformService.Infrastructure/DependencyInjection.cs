@@ -4,9 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlatformService.Infrastructure.Data;
 using PlatformService.Infrastructure.Repositories;
-using PlatformService.Infrastructure.SyncDataServices.Http;
 using PlatformService.Application.Contracts.Services;
 using PlatformService.Application.Contracts.Repos;
+using PlatformService.Infrastructure.Services.SyncData.Http;
 
 namespace PlatformService.Infrastructure;
 
