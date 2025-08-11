@@ -10,6 +10,7 @@ public static class DependencyInjection
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddTransient<ICommandService, Services.CommandService>();
         services.AddTransient<IPlatformService, Services.PlatformService>();
+        services.AddSingleton<Services.Integration.Interfaces.IEventProcessor, Services.Integration.EventProcessor>();
         return services;
     }
 }
