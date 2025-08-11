@@ -33,6 +33,28 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformService.Integration
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformService.UnitTests", "src\PlatformService\tests\PlatformService.UnitTests\PlatformService.UnitTests.csproj", "{AAE218F8-9170-D72E-133F-02E308FAE6E6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8S", "K8S", "{7F448905-3749-4C1B-84E4-73FB002CD4BF}"
+	ProjectSection(SolutionItems) = preProject
+		deploy\K8S\commands-depl.yaml = deploy\K8S\commands-depl.yaml
+		deploy\K8S\ingress-srv.yaml = deploy\K8S\ingress-srv.yaml
+		deploy\K8S\local-pvc.yaml = deploy\K8S\local-pvc.yaml
+		deploy\K8S\mssql-plat-depl.yaml = deploy\K8S\mssql-plat-depl.yaml
+		deploy\K8S\platforms-depl.yaml = deploy\K8S\platforms-depl.yaml
+		deploy\K8S\platforms-np-srv.yaml = deploy\K8S\platforms-np-srv.yaml
+		deploy\K8S\README.md = deploy\K8S\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		global.json = global.json
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,5 +228,9 @@ Global
 		{BCB1B81D-36E7-7A08-90C8-3C9DA1F9616B} = {23D7A20F-545F-A7E5-F33D-A23414C916B5}
 		{2B525DB0-117A-2DB6-8D83-CD9680D5BE02} = {23D7A20F-545F-A7E5-F33D-A23414C916B5}
 		{AAE218F8-9170-D72E-133F-02E308FAE6E6} = {23D7A20F-545F-A7E5-F33D-A23414C916B5}
+		{7F448905-3749-4C1B-84E4-73FB002CD4BF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {26DEF158-EFFF-4A0C-A67A-5151CFE5F24F}
 	EndGlobalSection
 EndGlobal
