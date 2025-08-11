@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using PlatformService.Application.AppServices.Interfaces;
 using PlatformService.Application.Dtos;
-using PlatformService.Application.Services;
 using System;
 using System.ComponentModel.Design;
 

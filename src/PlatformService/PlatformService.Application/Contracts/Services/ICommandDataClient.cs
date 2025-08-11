@@ -1,6 +1,6 @@
 using PlatformService.Application.Dtos;
 
-namespace PlatformService.Infrastructure.Interfaces;
+namespace PlatformService.Application.Contracts.Services;
 
 public interface ICommandDataClient
 {

@@ -10,4 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CommandService.Domain\CommandService.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Contracts\Services\" />
+  </ItemGroup>
 </Project>

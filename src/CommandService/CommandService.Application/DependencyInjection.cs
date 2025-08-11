@@ -1,4 +1,4 @@
-using CommandService.Application.Services;
+using CommandService.Application.AppServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CommandService.Application;

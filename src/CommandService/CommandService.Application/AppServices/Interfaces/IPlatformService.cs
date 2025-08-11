@@ -1,6 +1,6 @@
 using CommandService.Application.Dtos.Platform;
 
-namespace CommandService.Application.Services;
+namespace CommandService.Application.AppServices.Interfaces;
 
 public interface IPlatformService
 {

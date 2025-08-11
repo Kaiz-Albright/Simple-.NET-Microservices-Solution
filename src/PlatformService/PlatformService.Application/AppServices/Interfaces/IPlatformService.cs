@@ -1,6 +1,6 @@
 using PlatformService.Application.Dtos;
 
-namespace PlatformService.Application.Services;
+namespace PlatformService.Application.AppServices.Interfaces;
 
 public interface IPlatformService
 {

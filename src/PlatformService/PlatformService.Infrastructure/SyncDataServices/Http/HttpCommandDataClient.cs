@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
+using PlatformService.Application.Contracts.Services;
 using PlatformService.Application.Dtos;
-using PlatformService.Infrastructure.Interfaces;
 
 namespace PlatformService.Infrastructure.SyncDataServices.Http;
 

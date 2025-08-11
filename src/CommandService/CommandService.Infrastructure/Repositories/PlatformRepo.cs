@@ -1,4 +1,4 @@
-using CommandService.Application.Repositories;
+using CommandService.Application.Contracts.Repos;
 using CommandService.Domain.Entities;
 using CommandService.Infrastructure.Data;
 

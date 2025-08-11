@@ -1,4 +1,4 @@
-using PlatformService.Application.Repositories;
+using PlatformService.Application.Contracts.Repos;
 using PlatformService.Domain.Entities;
 using PlatformService.Infrastructure.Data;
 

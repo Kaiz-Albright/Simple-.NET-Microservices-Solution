@@ -1,6 +1,7 @@
 using AutoMapper;
+using CommandService.Application.AppServices.Interfaces;
+using CommandService.Application.Contracts.Repos;
 using CommandService.Application.Dtos.Command;
-using CommandService.Application.Repositories;
 
 namespace CommandService.Application.Services;
 

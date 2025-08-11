@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using PlatformService.Application.Services;
+using PlatformService.Application.AppServices.Interfaces;
 
 namespace PlatformService.Application;
 

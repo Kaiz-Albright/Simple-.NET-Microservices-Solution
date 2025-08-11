@@ -1,8 +1,9 @@
 using AutoMapper;
-using PlatformService.Application.Repositories;
 using PlatformService.Domain.Entities;
-using PlatformService.Infrastructure.Interfaces;
 using PlatformService.Application.Dtos;
+using PlatformService.Application.Contracts.Services;
+using PlatformService.Application.Contracts.Repos;
+using PlatformService.Application.AppServices.Interfaces;
 
 namespace PlatformService.Application.Services;
 

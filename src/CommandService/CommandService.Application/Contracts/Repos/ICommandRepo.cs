@@ -1,6 +1,6 @@
 using CommandService.Domain.Entities;
 
-namespace CommandService.Application.Repositories;
+namespace CommandService.Application.Contracts.Repos;
 
 public interface ICommandRepo
 {

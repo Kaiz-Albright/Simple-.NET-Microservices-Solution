@@ -1,9 +1,9 @@
-using CommandService.Application.Repositories;
 using CommandService.Infrastructure.Data;
 using CommandService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using CommandService.Application.Contracts.Repos;
 
 namespace CommandService.Infrastructure;
 

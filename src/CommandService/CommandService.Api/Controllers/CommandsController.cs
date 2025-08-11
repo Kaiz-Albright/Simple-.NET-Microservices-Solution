@@ -1,5 +1,5 @@
+using CommandService.Application.AppServices.Interfaces;
 using CommandService.Application.Dtos.Command;
-using CommandService.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommandService.Api.Controllers;

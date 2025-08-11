@@ -1,6 +1,6 @@
 using CommandService.Application.Dtos.Command;
 
-namespace CommandService.Application.Services;
+namespace CommandService.Application.AppServices.Interfaces;
 
 public interface ICommandService
 {

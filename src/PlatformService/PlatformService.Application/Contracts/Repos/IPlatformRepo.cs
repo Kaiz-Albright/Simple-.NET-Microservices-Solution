@@ -1,12 +1,12 @@
-using CommandService.Domain.Entities;
+using PlatformService.Domain.Entities;
 
-namespace CommandService.Application.Repositories;
+namespace PlatformService.Application.Contracts.Repos;
 
 public interface IPlatformRepo
 {
     bool SaveChanges();
 
     IEnumerable<Platform> GetAllPlatforms();
+    Platform? GetPlatformById(int id);
     void CreatePlatform(Platform platform);
-    bool PlatformExists(int platformId);
 }
