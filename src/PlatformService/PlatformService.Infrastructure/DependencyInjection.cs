@@ -7,6 +7,7 @@ using PlatformService.Infrastructure.Repositories;
 using PlatformService.Application.Contracts.Services;
 using PlatformService.Application.Contracts.Repos;
 using PlatformService.Infrastructure.Services.SyncData.Http;
+using PlatformService.Infrastructure.Services.ASyncData;
 
 namespace PlatformService.Infrastructure;
 
@@ -30,6 +31,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPlatformRepo, PlatformRepo>();
         services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+        services.AddSingleton<IMessageBusClient, MessageBusClient>();
 
         return services;
     }

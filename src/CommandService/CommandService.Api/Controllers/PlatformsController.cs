@@ -29,4 +29,11 @@ public class PlatformsController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    [HttpPost(Name = "TestInboundConnection")]
+    public ActionResult TestInboundConnection()
+    {
+        var response = _platformService.TestInboundConnection();
+        return Ok(response);
+    }
 }

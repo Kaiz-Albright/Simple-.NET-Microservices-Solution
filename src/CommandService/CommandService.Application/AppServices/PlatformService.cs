@@ -28,4 +28,10 @@ public class PlatformService : IPlatformService
         Console.WriteLine($"--> Checking if platform with ID {platformId} exists");
         return _repository.PlatformExists(platformId);
     }
+
+    public string TestInboundConnection()
+    {
+        Console.WriteLine("--> Inbound POST # Command Service");
+        return "Inbound test from Commands Service";
+    }
 }

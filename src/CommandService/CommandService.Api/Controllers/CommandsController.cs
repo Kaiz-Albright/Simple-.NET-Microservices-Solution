@@ -108,12 +108,5 @@ public class CommandsController : ControllerBase
         }
     }
 
-    /*
-    [HttpPost(Name = "TestInboundConnection")]
-    public ActionResult TestInboundConnection()
-    {
-        var response = _commandService.TestInboundConnection();
-        return Ok(response);
-    }
-    */
+    
 }

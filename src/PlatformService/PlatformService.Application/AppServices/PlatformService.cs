@@ -12,15 +12,18 @@ public class PlatformService : IPlatformService
     private readonly IPlatformRepo _repository;
     private readonly IMapper _mapper;
     private readonly ICommandDataClient _commandDataClient;
+    private readonly IMessageBusClient _messageBusClient;
 
     public PlatformService(
         IPlatformRepo repository,
         IMapper mapper,
-        ICommandDataClient commandDataClient)
+        ICommandDataClient commandDataClient,
+        IMessageBusClient messageBusClient)
     {
         _repository = repository;
         _mapper = mapper;
         _commandDataClient = commandDataClient;
+        _messageBusClient = messageBusClient;
     }
 
     public IEnumerable<PlatformReadDto> GetAllPlatforms()
@@ -43,6 +46,7 @@ public class PlatformService : IPlatformService
 
         var platformReadDto = _mapper.Map<PlatformReadDto>(platformModel);
 
+        // Send Sync Message
         try
         {
             await _commandDataClient.SendPlatformToCommand(platformReadDto);
@@ -50,6 +54,18 @@ public class PlatformService : IPlatformService
         catch (Exception ex)
         {
             Console.WriteLine($"--> Error sending platform to Command Service: {ex.Message}");
+        }
+
+        //Send Async Message
+        try
+        {
+            var platformPuishedDto = _mapper.Map<PlatformPublishedDto>(platformReadDto);
+            platformPuishedDto.Event = "Platform_Published";
+            await _messageBusClient.PublishNewPlatform(platformPuishedDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> Error publishing new platform to message bus: {ex.Message}");
         }
 
         return platformReadDto;

@@ -47,9 +47,5 @@ public class CommandService : ICommandService
         return _mapper.Map<CommandReadDto>(command);
     }
 
-    public string TestInboundConnection()
-    {
-        Console.WriteLine("--> Inbound POST # Command Service");
-        return "Inbound test from Commands Service";
-    }
+    
 }
