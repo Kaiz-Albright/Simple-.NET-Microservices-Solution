@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using PlatformService.Application.Contracts.Services;
-using PlatformService.Application.Dtos;
+﻿using CommandService.Application.Contracts.Services;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
@@ -8,19 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlatformService.Infrastructure.Services.ASyncData
+namespace CommandService.Infrastructure.Services.ASyncData
 {
-    public class MessageBusClient : IMessageBusClient, IDisposable
+    public class MessageBusSubscriber: IMessageBusSubscriber, IDisposable
     {
         private readonly IConfiguration _congifuration;
         private readonly IConnection _connection;
         private readonly IChannel _channel;
+        private readonly string _queueName;
 
-        public MessageBusClient(IConfiguration configuration)
+        public MessageBusSubscriber(IConfiguration configuration)
         {
             _congifuration = configuration;
             _connection = ConnectToMessageBus();
             _channel = CreateMessageChannel();
+            _queueName = DeclareQueue();
 
             SetEvents();
         }
@@ -42,6 +43,22 @@ namespace PlatformService.Infrastructure.Services.ASyncData
                 Console.WriteLine("--> Connection to Message Bus is blocked");
                 return Task.CompletedTask;
             };
+        }
+
+        private string DeclareQueue()
+        {
+            try
+            {
+                var queueName = _channel.QueueDeclareAsync().GetAwaiter().GetResult().QueueName;
+                Console.WriteLine($"--> Queue Name: {queueName}");
+                
+                return queueName;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"--> Error declaring queue: {ex.Message}");
+                throw;
+            }
         }
 
         private IChannel CreateMessageChannel()
@@ -86,7 +103,7 @@ namespace PlatformService.Infrastructure.Services.ASyncData
                 Console.WriteLine("--> Connected to Message Bus");
                 return connection;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"--> Could not connect to Message Bus: {ex.Message}");
                 throw;
@@ -110,41 +127,6 @@ namespace PlatformService.Infrastructure.Services.ASyncData
             };
         }
 
-        public async Task PublishNewPlatform(PlatformPublishedDto platformPublishedDto)
-        {
-            var message = System.Text.Json.JsonSerializer.Serialize(platformPublishedDto);
-
-            if (_channel == null || !_channel.IsOpen)
-            {
-                throw new InvalidOperationException("Message Channel is not open.");
-            }
-
-            try
-            {
-                await SendMessage(message);
-                Console.WriteLine($"--> Published message to Message Bus: {message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"--> Error publishing message to Message Bus: {ex.Message}");
-            }
-        }
-
-        private async Task SendMessage(string message)
-        {
-            var body = Encoding.UTF8.GetBytes(message);
-
-            var props = new BasicProperties();
-
-            await _channel.BasicPublishAsync(
-                exchange: "trigger",
-                routingKey: "",
-                mandatory: false,
-                basicProperties: props,
-                body: body
-            );
-        }
-
         public void Dispose()
         {
             if (_channel != null && _channel.IsOpen)
@@ -157,6 +139,44 @@ namespace PlatformService.Infrastructure.Services.ASyncData
                 Console.WriteLine("--> Closing Message Bus Connection");
                 _connection.CloseAsync().GetAwaiter().GetResult();
             }
+        }
+
+        public Task SubscribeAsync()
+        {
+            try
+            {
+                _channel.QueueBindAsync(
+                    queue: _queueName,
+                    exchange: "trigger",
+                    routingKey: string.Empty
+                );
+                Console.WriteLine("--> Queue bound to exchange 'trigger'");
+                Console.WriteLine($"--> Subscribed to Queue");
+                return Task.CompletedTask;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"--> Error binding queue to exchange: {ex.Message}");
+                throw;
+            }
+        }
+
+        public IChannel GetChannel()
+        {
+            if (_channel == null || !_channel.IsOpen)
+            {
+                throw new InvalidOperationException("Message Channel is not open.");
+            }
+            return _channel;
+        }
+
+        public string GetQueueName()
+        {
+            if (string.IsNullOrEmpty(_queueName))
+            {
+                throw new InvalidOperationException("Queue name is not set.");
+            }
+            return _queueName;
         }
     }
 }

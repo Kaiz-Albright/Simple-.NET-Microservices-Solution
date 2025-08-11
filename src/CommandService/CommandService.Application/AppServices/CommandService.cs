@@ -24,12 +24,12 @@ public class CommandService : ICommandService
         return _mapper.Map<IEnumerable<CommandReadDto>>(commands);
     }
 
-    public IEnumerable<CommandReadDto> GetCommandForPlatform(int platformId, int commandId)
+    public CommandReadDto GetCommandForPlatform(int platformId, int commandId)
     {
         Console.WriteLine($"--> Getting command with ID {commandId} for platform with ID {platformId}");
 
         var command = _repository.GetCommand(platformId, commandId);
-        return _mapper.Map<IEnumerable<CommandReadDto>>(command);
+        return _mapper.Map<CommandReadDto>(command);
     }
 
     public CommandReadDto CreateCommand(int platformId, CommandCreateDto commandCreateDto)

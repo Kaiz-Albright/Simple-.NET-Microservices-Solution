@@ -6,11 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommandService.Domain\CommandService.Domain.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Contracts\Services\" />
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using CommandService.Application;
 using CommandService.Infrastructure;
+using CommandService.Api.Consumers;
 
 namespace PlatformService
 {
@@ -25,7 +26,9 @@ namespace PlatformService
         {
             services.AddApplication();
             services.AddInfrastructure(Configuration);
+
             services.AddControllers();
+            services.AddHostedService<PlatformCreatedBackgroundService>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PlatformService", Version = "v1" });

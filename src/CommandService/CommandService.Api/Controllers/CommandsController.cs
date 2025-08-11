@@ -63,7 +63,7 @@ public class CommandsController : ControllerBase
             }
             
             var command = _commandService.GetCommandForPlatform(platformId, commandId);
-            if (command == null || !command.Any())
+            if (command == null)
             {
                 return NotFound($"No command found with ID {commandId} for platform with ID {platformId}.");
             }
