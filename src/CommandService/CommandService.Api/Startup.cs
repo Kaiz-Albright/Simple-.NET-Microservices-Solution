@@ -8,6 +8,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using CommandService.Application;
 using CommandService.Infrastructure;
 using CommandService.Api.Consumers;
+using CommandService.Infrastructure.Data;
 
 namespace PlatformService
 {
@@ -29,6 +30,7 @@ namespace PlatformService
 
             services.AddControllers();
             services.AddHostedService<PlatformCreatedBackgroundService>();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PlatformService", Version = "v1" });
@@ -52,6 +54,8 @@ namespace PlatformService
             {
                 endpoints.MapControllers();
             });
+
+            PrepDb.PrepPopulation(app);
         }
     }
 }

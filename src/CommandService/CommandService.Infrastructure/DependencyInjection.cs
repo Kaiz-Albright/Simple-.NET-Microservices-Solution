@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddScoped<ICommandRepo, CommandRepo>();
         services.AddScoped<IPlatformRepo, PlatformRepo>();
         services.AddSingleton<IMessageBusSubscriber, Services.ASyncData.MessageBusSubscriber>();
+        services.AddScoped<IPlatformGrpcClient, Services.SyncData.PlatformGrpcClient>();
 
         return services;
     }
