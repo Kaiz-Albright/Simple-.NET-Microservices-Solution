@@ -3,11 +3,13 @@
 Este repositorio recoge mi proceso de aprendizaje al construir una arquitectura de microservicios con **.NET 9**. Durante el desarrollo diseñé y codifiqué dos servicios independientes, **PlatformService** y **CommandService**, que colaboran mediante distintos mecanismos de comunicación.
 
 ## Lo que aprendí
-- Diseñé un monorepo con separación de responsabilidades en capas de dominio, aplicación, infraestructura y API.
-- Implementé comunicación sincrónica a través de HTTP y gRPC.
-- Integré mensajería asíncrona con RabbitMQ para desacoplar los servicios.
+- Diseñé un monorepo de 2 microservicios cada uno con su propia base de datos, comunicados de manera síncrona y asíncrona.
+- Uso de principios SOLID y aplicación de Domain Driven Development.
+- Implementé comunicación síncrona a través de HTTP y gRPC.
+- Integré mensajería asíncrona con RabbitMQ para simular el caso de servicios desacoplados.
 - Apliqué Entity Framework Core para persistencia InMemory y SQL Server.
-- Escribí pruebas unitarias e integradas utilizando `dotnet test`.
+- Escribí pruebas unitarias y de integración utilizando `dotnet test`.
+- Me puse desde el punto de vista del puesto de DevOps, planificando despliegues usando Docker y orquestando con Kubernetes.
 
 ## Tecnologías principales
 - .NET 9 y ASP.NET Core
@@ -24,7 +26,7 @@ Cada servicio se encuentra en `src/` y sigue el mismo diseño en capas:
 src/
   PlatformService/
     PlatformService.Api           # API REST y gRPC
-    PlatformService.Application   # Casos de uso
+    PlatformService.Application   # Lógica de negocio
     PlatformService.Domain        # Entidades
     PlatformService.Infrastructure# Datos, mensajería, clientes
 
