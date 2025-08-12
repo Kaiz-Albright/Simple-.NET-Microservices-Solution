@@ -2,6 +2,7 @@
 using PlatformService.Infrastructure.Data;
 using PlatformService.Application;
 using PlatformService.Infrastructure;
+using PlatformService.Api.Grpc;
 
 namespace PlatformService
 {
@@ -20,6 +21,7 @@ namespace PlatformService
         {
             services.AddApplication();
             services.AddInfrastructure(Configuration, _env);
+            services.AddGrpc();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -45,6 +47,13 @@ namespace PlatformService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapGrpcService<GrpcPlatformService>();
+
+                endpoints.MapGet("/protos/platforms.proto", async context =>
+                {
+                    context.Response.ContentType = "application/octet-stream";
+                    await context.Response.SendFileAsync(Path.Combine(env.ContentRootPath, "Protos", "platform.proto"));
+                });
             });
 
             PrepDb.PrepPopulation(app, env.IsProduction());
