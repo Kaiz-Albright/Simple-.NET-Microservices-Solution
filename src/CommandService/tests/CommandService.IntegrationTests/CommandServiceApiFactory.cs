@@ -4,9 +4,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using CommandService.Api;
+
+using Microsoft.Extensions.Hosting;
+using CommandsService;
+using CommandService.Api.Consumers;
 using CommandService.Infrastructure.Data;
 using CommandService.Domain.Entities;
+using CommandService.Application.Contracts.Services;
+using RabbitMQ.Client;
+
 
 namespace CommandService.IntegrationTests;
 
@@ -34,6 +40,23 @@ public class CommandServiceApiFactory : WebApplicationFactory<Program>
             services.AddDbContext<CommandDbContext>(options =>
                 options.UseInMemoryDatabase(databaseName));
 
+
+            var hostedDescriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(IHostedService) &&
+                d.ImplementationType == typeof(PlatformCreatedBackgroundService));
+            if (hostedDescriptor != null)
+            {
+                services.Remove(hostedDescriptor);
+            }
+
+            var busDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IMessageBusSubscriber));
+            if (busDescriptor != null)
+            {
+                services.Remove(busDescriptor);
+            }
+            services.AddSingleton<IMessageBusSubscriber, FakeMessageBusSubscriber>();
+
+
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<CommandDbContext>();
@@ -48,4 +71,13 @@ public class CommandServiceApiFactory : WebApplicationFactory<Program>
             db.SaveChanges();
         });
     }
+
+
+    private class FakeMessageBusSubscriber : IMessageBusSubscriber
+    {
+        public Task SubscribeAsync() => Task.CompletedTask;
+        public IChannel GetChannel() => null!;
+        public string GetQueueName() => string.Empty;
+    }
+
 }
