@@ -1,97 +1,79 @@
-# Simple .NET Microservices Solution
+# Solución de Microservicios con .NET
 
-This repository demonstrates a lightweight microservices architecture built with .NET 9.0. It contains two small services that communicate over HTTP.
+Este repositorio recoge mi proceso de aprendizaje al construir una arquitectura de microservicios con **.NET 9**. Durante el desarrollo diseñé y codifiqué dos servicios independientes, **PlatformService** y **CommandService**, que colaboran mediante distintos mecanismos de comunicación.
 
-## Services
+## Lo que aprendí
+- Diseñé un monorepo con separación de responsabilidades en capas de dominio, aplicación, infraestructura y API.
+- Implementé comunicación sincrónica a través de HTTP y gRPC.
+- Integré mensajería asíncrona con RabbitMQ para desacoplar los servicios.
+- Apliqué Entity Framework Core para persistencia InMemory y SQL Server.
+- Escribí pruebas unitarias e integradas utilizando `dotnet test`.
 
-- **PlatformService** – exposes a REST API for managing software platforms. When a platform is created it forwards the data to the CommandsService.
-- **CommandsService** – accepts platform data sent from the PlatformService and provides a basic endpoint for testing inbound requests.
+## Tecnologías principales
+- .NET 9 y ASP.NET Core
+- Entity Framework Core
+- RabbitMQ
+- gRPC
+- AutoMapper
+- Docker/Kubernetes (manifiestos en `deploy/`)
 
-## Prerequisites
+## Arquitectura del monorepo
+Cada servicio se encuentra en `src/` y sigue el mismo diseño en capas:
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
-- A tool such as `curl` or an API client to issue HTTP requests
+```
+src/
+  PlatformService/
+    PlatformService.Api           # API REST y gRPC
+    PlatformService.Application   # Casos de uso
+    PlatformService.Domain        # Entidades
+    PlatformService.Infrastructure# Datos, mensajería, clientes
 
-## Setup
-
-Restore dependencies and build the solution:
-
-```bash
-dotnet restore
-dotnet build SimpleDotnetMicroservices.sln
+  CommandService/
+    CommandService.Api
+    CommandService.Application
+    CommandService.Domain
+    CommandService.Infrastructure
 ```
 
-## Running the services
+**Flujo de comunicación**
+- PlatformService expone una API REST para gestionar plataformas.
+- Al crear una plataforma envía la información a CommandService por HTTP y publica un evento en RabbitMQ.
+- CommandService consume los eventos y usa gRPC para consultar plataformas en PlatformService.
 
-Run each service in separate terminals:
+## Requisitos previos
+- [SDK de .NET 9](https://dotnet.microsoft.com/download)
+- [Docker](https://www.docker.com/) (para levantar RabbitMQ)
 
+## Puesta en marcha
+1. Levanta RabbitMQ:
+   ```bash
+   docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+   ```
+2. En terminales separadas ejecuta cada servicio:
+   ```bash
+   dotnet run --project src/PlatformService/PlatformService.Api    # puerto 5028
+   dotnet run --project src/CommandService/CommandService.Api      # puerto 5066
+   ```
+
+## Pruebas manuales
 ```bash
-# Terminal 1 – PlatformService
-dotnet run --project PlatformService
-
-# Terminal 2 – CommandsService
-dotnet run --project CommandsService
-```
-
-By default PlatformService listens on `http://localhost:5028` and CommandsService on `http://localhost:5066`.
-
-## Testing
-
-Use `curl` to exercise the APIs:
-
-```bash
-# Retrieve platforms
+# Listar plataformas
 curl http://localhost:5028/api/platforms
 
-# Create a new platform
+# Crear plataforma
 curl -X POST http://localhost:5028/api/platforms \
   -H "Content-Type: application/json" \
   -d '{"name":"Demo","publisher":"Acme","cost":"Free"}'
 
-# Test the CommandsService endpoint
-curl -X POST http://localhost:5066/api/c/platforms
+# Consultar plataformas desde CommandService
+curl http://localhost:5066/api/c/platforms
 ```
 
-Alternatively, use the `.http` files in each project if your editor supports them.
-
-## Visual test execution and reports
-
-you can generate a visual HTML test report and a clickable coverage report.
-
-One-time setup (per machine):
-
-```powershell
-# from repo root (Windows PowerShell)
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\Test-Visual.ps1 -NoOpen
+## Tests automatizados
+Ejecuta todos los tests con:
+```bash
+dotnet test
 ```
 
-That will ensure required local tools are installed.
-
-Regular usage:
-
-```powershell
-# from repo root (opens reports when done)
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\Test-Visual.ps1
-```
-
-This will:
-- run `dotnet test` with TRX output and Cobertura coverage
-- generate TestResults/index.html (test summary). If an external TRX→HTML tool is unavailable, a built‑in fallback renderer is used
-- generate CoverageReport/index.html (coverage by file/line)
-- open available reports in your browser (omit `-NoOpen` to skip opening)
-
-What’s included in the HTML test report:
-- Filter by text (test name/details) and by outcome (All/Passed/Failed/Skipped)
-- Sort by Test, Outcome, or Duration via clickable headers
-- Live visible row count
-
-Ignored artifacts in git:
-- TestResults/, CoverageReport/, and *.trx files are ignored by .gitignore to keep the repo clean
-
-Troubleshooting:
-- If reports do not open automatically, open them manually:
-  - Test report: TestResults/index.html
-  - Coverage: CoverageReport/index.html
-- If you use PowerShell 7 (pwsh), you can run: `pwsh scripts/Test-Visual.ps1`
-- If ReportGenerator isn’t available, coverage HTML will be skipped; re-run after `dotnet tool install dotnet-reportgenerator-globaltool`
+Los archivos `.http` dentro de cada servicio permiten realizar peticiones desde el editor. Los manifiestos de Kubernetes se encuentran en `deploy/K8S`.
 
