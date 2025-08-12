@@ -4,7 +4,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Resolve repository root (script is in scripts/)
+# Resolve repository root (script is in testing/scripts/)
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $toolsJson = Join-Path $repoRoot '.config/dotnet-tools.json'
 
@@ -61,22 +61,45 @@ $coverageDir = Join-Path $repoRoot 'CoverageReport'
 New-Item -ItemType Directory -Force -Path $resultsDir | Out-Null
 New-Item -ItemType Directory -Force -Path $coverageDir | Out-Null
 
+# Discover all test projects (*.Tests.csproj / *Tests.csproj) under src/
+$tests = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'src') -Recurse -File -Include *Tests.csproj,*.Tests.csproj | Sort-Object FullName
+if (-not $tests) {
+  Write-Warning "No test projects found under src/. Running dotnet test at repo root as fallback."
+}
+
 Push-Location $repoRoot
 try {
+  $runsettings = Join-Path $repoRoot 'testing/tests.runsettings'
+  if (-not (Test-Path $runsettings)) {
+    Write-Warning "RunSettings not found at '$runsettings'. Coverage may be limited."
+  }
+
   Write-Host "Running tests with TRX and coverage..."
-  dotnet test $repoRoot --settings (Join-Path $repoRoot 'tests.runsettings') --logger "trx;LogFileName=test.trx" --results-directory $resultsDir --collect "XPlat Code Coverage"
+  if ($tests) {
+    foreach ($proj in $tests) {
+      $name = [System.IO.Path]::GetFileNameWithoutExtension($proj.Name)
+      $logName = "$name.trx"
+      Write-Host " - $name"
+      dotnet test $proj.FullName --nologo --no-build --logger "trx;LogFileName=$logName" --results-directory $resultsDir @(
+        if (Test-Path $runsettings) { '--settings'; $runsettings }
+      ) --collect "XPlat Code Coverage"
+    }
+  } else {
+    dotnet test $repoRoot --nologo --logger "trx;LogFileName=AllTests.trx" --results-directory $resultsDir @(
+      if (Test-Path $runsettings) { '--settings'; $runsettings }
+    ) --collect "XPlat Code Coverage"
+  }
 
-  $trx = Join-Path $resultsDir 'test.trx'
-  if (-not (Test-Path $trx)) { throw "TRX file not found: $trx" }
+  # Collect all TRX files produced
+  $trxFiles = Get-ChildItem -LiteralPath $resultsDir -Filter *.trx -File | Sort-Object Name
+  if (-not $trxFiles) { throw "No TRX files were generated in $resultsDir" }
 
-  function Convert-TrxToHtmlSimple {
-    param([string]$TrxPath,[string]$HtmlPath,[string]$Title)
-    [xml]$xml = Get-Content $TrxPath -Raw
-    $nsm = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-    $nsm.AddNamespace('t', $xml.DocumentElement.NamespaceURI)
-    $results = $xml.SelectNodes('//t:UnitTestResult', $nsm)
-    $summary = $xml.SelectSingleNode('//t:Counters', $nsm)
-    $times = $xml.SelectSingleNode('//t:Times', $nsm)
+  function Convert-TrxToHtmlMulti {
+    param(
+      [Parameter(Mandatory=$true)][System.IO.FileInfo[]]$TrxFiles,
+      [Parameter(Mandatory=$true)][string]$HtmlPath,
+      [Parameter(Mandatory=$true)][string]$Title
+    )
 
     function HtmlEscape([string]$s) {
       if ($null -eq $s) { return '' }
@@ -85,39 +108,44 @@ try {
       return $s
     }
 
-    if ($null -eq $summary) {
-      # Derive counts from results if summary missing
+    $allRows = @()
+    $grandTotal = 0; $grandPassed = 0; $grandFailed = 0; $grandSkipped = 0
+
+    foreach ($f in $TrxFiles) {
+      [xml]$xml = Get-Content $f.FullName -Raw
+      $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+      $ns.AddNamespace('t', $xml.DocumentElement.NamespaceURI)
+      $results = $xml.SelectNodes('//t:UnitTestResult', $ns)
+      $summary = $xml.SelectSingleNode('//t:Counters', $ns)
+      $suiteName = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
+
       $total = $results.Count
       $passed = ($results | Where-Object { $_.outcome -eq 'Passed' }).Count
       $failed = ($results | Where-Object { $_.outcome -eq 'Failed' }).Count
       $skipped = ($results | Where-Object { $_.outcome -ne 'Passed' -and $_.outcome -ne 'Failed' }).Count
-    } else {
-      $total = [int]($summary.total)
-      $passed = [int]($summary.passed)
-      $failed = [int]($summary.failed)
-      $skipped = [int]($summary.notExecuted)
-    }
-    $started = if ($times) { $times.start } else { '' }
-    $finished = if ($times) { $times.finish } else { '' }
+      if ($summary) {
+        $total = [int]$summary.total; $passed = [int]$summary.passed; $failed = [int]$summary.failed; $skipped = [int]$summary.notExecuted
+      }
+      $grandTotal += $total; $grandPassed += $passed; $grandFailed += $failed; $grandSkipped += $skipped
 
-    $rows = @()
-    foreach ($r in $results) {
-      $name = HtmlEscape $r.testName
-      $outcome = HtmlEscape $r.outcome
-      $duration = HtmlEscape $r.duration
-      $errMsg = ''
-      $stack = ''
-      $out = $r.SelectSingleNode('t:Output/t:ErrorInfo/t:Message', $nsm)
-      if ($out) { $errMsg = HtmlEscape $out.InnerText }
-      $st = $r.SelectSingleNode('t:Output/t:ErrorInfo/t:StackTrace', $nsm)
-      if ($st) { $stack = HtmlEscape $st.InnerText }
-      $rows += "<tr class='outcome-$outcome'><td>$name</td><td>$outcome</td><td>$duration</td><td><pre>$errMsg`n$stack</pre></td></tr>"
+      foreach ($r in $results) {
+        $name = HtmlEscape $r.testName
+        $outcome = HtmlEscape $r.outcome
+        $duration = HtmlEscape $r.duration
+        $errMsg = ''
+        $stack = ''
+        $out = $r.SelectSingleNode('t:Output/t:ErrorInfo/t:Message', $ns)
+        if ($out) { $errMsg = HtmlEscape $out.InnerText }
+        $st = $r.SelectSingleNode('t:Output/t:ErrorInfo/t:StackTrace', $ns)
+        if ($st) { $stack = HtmlEscape $st.InnerText }
+        $allRows += "<tr class='outcome-$outcome'><td>" + HtmlEscape($suiteName) + "</td><td>$name</td><td>$outcome</td><td>$duration</td><td><pre>$errMsg`n$stack</pre></td></tr>"
+      }
     }
 
     $titleEsc = HtmlEscape $Title
-    $styleLines = @(
+    $style = @(
       'body{font-family:Segoe UI,Arial,Helvetica,sans-serif;margin:16px}',
-      '.cards{display:flex;gap:12px;margin:12px 0}',
+      '.cards{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}',
       '.card{padding:10px 12px;border-radius:8px;background:#f5f5f5;border:1px solid #e0e0e0}',
       '.ok{background:#e8f5e9;border-color:#c8e6c9}',
       '.fail{background:#ffebee;border-color:#ffcdd2}',
@@ -131,78 +159,60 @@ try {
       'pre{white-space:pre-wrap;margin:0}'
     ) -join "`n"
 
-    $htmlLines = @()
-    $htmlLines += '<!DOCTYPE html>'
-    $htmlLines += '<html>'
-    $htmlLines += '<head>'
-    $htmlLines += "<meta charset='utf-8'/>"
-    $htmlLines += "<title>$titleEsc</title>"
-    $htmlLines += '<style>'
-    $htmlLines += $styleLines
-    $htmlLines += '</style>'
-    $htmlLines += '</head>'
-    $htmlLines += '<body>'
-    $htmlLines += "<h1>$titleEsc</h1>"
-    $htmlLines += "<div>Started: $started&nbsp; Finished: $finished</div>"
-    $htmlLines += "<div class='cards'>"
-    $htmlLines += "  <div class='card'>Total: <b>$total</b></div>"
-    $htmlLines += "  <div class='card ok'>Passed: <b>$passed</b></div>"
-    $htmlLines += "  <div class='card fail'>Failed: <b>$failed</b></div>"
-    $htmlLines += "  <div class='card skip'>Skipped: <b>$skipped</b></div>"
-    $htmlLines += '</div>'
+    $html = @()
+    $html += '<!DOCTYPE html>'
+    $html += '<html>'
+    $html += '<head>'
+    $html += "<meta charset='utf-8'/>"
+    $html += "<title>$titleEsc</title>"
+    $html += '<style>'
+    $html += $style
+    $html += '</style>'
+    $html += '</head>'
+    $html += '<body>'
+    $html += "<h1>$titleEsc</h1>"
+    $html += "<div class='cards'>"
+    $html += "  <div class='card'>Total: <b>$grandTotal</b></div>"
+    $html += "  <div class='card ok'>Passed: <b>$grandPassed</b></div>"
+    $html += "  <div class='card fail'>Failed: <b>$grandFailed</b></div>"
+    $html += "  <div class='card skip'>Skipped: <b>$grandSkipped</b></div>"
+    $html += '</div>'
 
-    # Controls for filtering & sorting
-    $htmlLines += "<div style='margin:12px 0; display:flex; gap:12px; align-items:center'>"
-    $htmlLines += "  <label for='filterText'>Filter:</label> <input id='filterText' type='text' placeholder='Search test name or details' style='flex:1; padding:6px 8px' />"
-    $htmlLines += "  <label for='filterOutcome'>Outcome:</label> <select id='filterOutcome' style='padding:6px 8px'><option value=''>All</option><option>Passed</option><option>Failed</option><option value='NotExecuted'>Skipped</option></select>"
-    $htmlLines += "  <button id='clearFilters' style='padding:6px 10px'>Clear</button>"
-    $htmlLines += "  <span id='rowCount' style='margin-left:auto; color:#666'></span>"
-    $htmlLines += "</div>"
+    $html += "<div style='margin:12px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap'>"
+    $html += "  <label for='filterText'>Filter:</label> <input id='filterText' type='text' placeholder='Search test name or details' style='flex:1; min-width:240px; padding:6px 8px' />"
+    $html += "  <label for='filterOutcome'>Outcome:</label> <select id='filterOutcome' style='padding:6px 8px'><option value=''>All</option><option>Passed</option><option>Failed</option><option value='NotExecuted'>Skipped</option></select>"
+    $html += "  <label for='filterSuite'>Suite:</label> <input id='filterSuite' type='text' placeholder='Project/Test suite' style='min-width:200px; padding:6px 8px' />"
+    $html += "  <button id='clearFilters' style='padding:6px 10px'>Clear</button>"
+    $html += "  <span id='rowCount' style='margin-left:auto; color:#666'></span>"
+    $html += '</div>'
 
-    $htmlLines += "<table id='resultsTable'>"
-    $htmlLines += '  <thead><tr><th class="sortable" data-col="0">Test</th><th class="sortable" data-col="1">Outcome</th><th class="sortable" data-col="2">Duration</th><th>Details</th></tr></thead>'
-    $htmlLines += '  <tbody>'
-    $htmlLines += ($rows -join "`n")
-    $htmlLines += '  </tbody>'
-    $htmlLines += '</table>'
+    $html += "<table id='resultsTable'>"
+    $html += '  <thead><tr><th class="sortable" data-col="0">Suite</th><th class="sortable" data-col="1">Test</th><th class="sortable" data-col="2">Outcome</th><th class="sortable" data-col="3">Duration</th><th>Details</th></tr></thead>'
+    $html += '  <tbody>'
+    $html += ($allRows -join "`n")
+    $html += '  </tbody>'
+    $html += '</table>'
 
-    # Client-side JS for filtering and sorting
-    $htmlLines += '<script>'
-    $htmlLines += "(function(){"
-    $htmlLines += "var txt=document.getElementById('filterText');"
-    $htmlLines += "var sel=document.getElementById('filterOutcome');"
-    $htmlLines += "var clr=document.getElementById('clearFilters');"
-    $htmlLines += "var table=document.getElementById('resultsTable');"
-    $htmlLines += "var tbody=table.querySelector('tbody');"
-    $htmlLines += "var count=document.getElementById('rowCount');"
-    $htmlLines += "function norm(s){return (s||'').toLowerCase();}"
-    $htmlLines += "function filter(){var q=norm(txt.value);var oc=sel.value;var shown=0;Array.from(tbody.rows).forEach(function(r){var name=r.cells[0].textContent;var outcome=r.cells[1].textContent;var details=r.cells[3].textContent;var ok=true;if(q){ok=norm(name).indexOf(q)>-1||norm(details).indexOf(q)>-1;}if(ok&&oc){ok=outcome===oc;}r.style.display=ok?'':'none';if(ok)shown++;});count.textContent=shown+' / '+tbody.rows.length+' visible';}"
-    $htmlLines += "txt.addEventListener('input',filter);sel.addEventListener('change',filter);clr.addEventListener('click',function(){txt.value='';sel.value='';filter();});"
-    $htmlLines += "function cmp(a,b,dir){if(a===b)return 0;if(a==null)return -1*dir;if(b==null)return 1*dir;if(!isNaN(a)&&!isNaN(b)){return (parseFloat(a)-parseFloat(b))*dir;}return a.localeCompare(b)*dir;}"
-    $htmlLines += "function sort(col){var dir=1;var th=table.tHead.rows[0].cells[col];var cur=th.getAttribute('data-dir');if(cur==='asc'){dir=-1;th.setAttribute('data-dir','desc');}else{dir=1;th.setAttribute('data-dir','asc');}Array.from(table.tHead.rows[0].cells).forEach(function(x){if(x!==th)x.removeAttribute('data-dir');});var rows=Array.from(tbody.rows);rows.sort(function(r1,r2){var a=r1.cells[col].textContent.trim();var b=r2.cells[col].textContent.trim();if(col===1){var map={'Passed':2,'Failed':1,'NotExecuted':0};a=(map[a]!==undefined?map[a]:-1);b=(map[b]!==undefined?map[b]:-1);}return cmp(a,b,dir);});rows.forEach(function(r){tbody.appendChild(r);});}"
-    $htmlLines += "Array.from(table.tHead.rows[0].cells).forEach(function(th){if(th.classList.contains('sortable')){th.style.cursor='pointer';th.title='Click to sort';th.addEventListener('click',function(){sort(parseInt(th.getAttribute('data-col')));});}});"
-    $htmlLines += "filter();"
-    $htmlLines += "})();"
-    $htmlLines += '</script>'
+    $html += '<script>'
+    $html += "(function(){"
+    $html += "var txt=document.getElementById('filterText');var sel=document.getElementById('filterOutcome');var suite=document.getElementById('filterSuite');var clr=document.getElementById('clearFilters');var table=document.getElementById('resultsTable');var tbody=table.querySelector('tbody');var count=document.getElementById('rowCount');function norm(s){return (s||'').toLowerCase();}function filter(){var q=norm(txt.value);var oc=sel.value;var sq=norm(suite.value);var shown=0;Array.from(tbody.rows).forEach(function(r){var s=r.cells[0].textContent;var name=r.cells[1].textContent;var outcome=r.cells[2].textContent;var details=r.cells[4].textContent;var ok=true;if(q){ok=norm(name).indexOf(q)>-1||norm(details).indexOf(q)>-1;}if(ok&&oc){ok=outcome===oc;}if(ok&&sq){ok=norm(s).indexOf(sq)>-1;}r.style.display=ok?'':'none';if(ok)shown++;});count.textContent=shown+' / '+tbody.rows.length+' visible';}txt.addEventListener('input',filter);sel.addEventListener('change',filter);suite.addEventListener('input',filter);clr.addEventListener('click',function(){txt.value='';sel.value='';suite.value='';filter();});function cmp(a,b,dir){if(a===b)return 0;if(a==null)return -1*dir;if(b==null)return 1*dir;if(!isNaN(a)&&!isNaN(b)){return (parseFloat(a)-parseFloat(b))*dir;}return a.localeCompare(b)*dir;}function sort(col){var dir=1;var th=table.tHead.rows[0].cells[col];var cur=th.getAttribute('data-dir');if(cur==='asc'){dir=-1;th.setAttribute('data-dir','desc');}else{dir=1;th.setAttribute('data-dir','asc');}Array.from(table.tHead.rows[0].cells).forEach(function(x){if(x!==th)x.removeAttribute('data-dir');});var rows=Array.from(tbody.rows);rows.sort(function(r1,r2){var a=r1.cells[col].textContent.trim();var b=r2.cells[col].textContent.trim();if(col===2){var map={'Passed':2,'Failed':1,'NotExecuted':0};a=(map[a]!==undefined?map[a]:-1);b=(map[b]!==undefined?map[b]:-1);}return cmp(a,b,dir);});rows.forEach(function(r){tbody.appendChild(r);});}Array.from(table.tHead.rows[0].cells).forEach(function(th){if(th.classList.contains('sortable')){th.style.cursor='pointer';th.title='Click to sort';th.addEventListener('click',function(){sort(parseInt(th.getAttribute('data-col')));});}});filter();" 
+    $html += "})();"
+    $html += '</script>'
 
-    $htmlLines += '</body>'
-    $htmlLines += '</html>'
+    $html += '</body>'
+    $html += '</html>'
 
     $dir = Split-Path $HtmlPath -Parent
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllLines($HtmlPath, $htmlLines, $utf8NoBom)
+    [System.IO.File]::WriteAllLines($HtmlPath, $html, $utf8NoBom)
     $fi = Get-Item $HtmlPath -ErrorAction SilentlyContinue
     if ($fi) { Write-Host "Wrote HTML report: $($fi.FullName) ($([int]$fi.Length) bytes)" }
   }
 
-  if ($hasTrx2Html) {
-    Write-Host "Generating HTML test report (external tool)..."
-    dotnet tool run trx2html $trx --title "PlatformMicros Tests" --output (Join-Path $resultsDir 'index.html')
-  } else {
-    Write-Host "Generating HTML test report (built-in fallback)..."
-    Convert-TrxToHtmlSimple -TrxPath $trx -HtmlPath (Join-Path $resultsDir 'index.html') -Title 'PlatformMicros Tests'
-  }
+  # Prefer our multi-TRX aggregator; if external tool available but cannot merge, we still have a full report
+  Write-Host "Generating HTML test report..."
+  Convert-TrxToHtmlMulti -TrxFiles $trxFiles -HtmlPath (Join-Path $resultsDir 'index.html') -Title 'PlatformMicros Tests'
 
   if ($hasReportGen) {
     Write-Host "Generating HTML coverage report..."
